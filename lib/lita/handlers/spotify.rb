@@ -100,8 +100,9 @@ module Lita
         Lita.logger.debug "Using the search type and term #{search_type} and #{search_term}"
         Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
+        spotify_user = RSpotify::User.new({'credentials' => redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)})
         # user = RSpotify::User.find(config.user)
-        Lita.logger.debug "Finding playlist with #{config.user} and #{config.playlist}"
+        Lita.logger.debug "Finding playlist with spotify user #{spotify_user.display_name} #{config.user} and #{config.playlist}"
         playlist = RSpotify::Playlist.find(config.user, config.playlist)
 
         case search_type
