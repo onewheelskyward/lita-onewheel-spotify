@@ -113,7 +113,7 @@ module Lita
           playlist.add_tracks!(tracks)
         # end
 
-        response.reply "Added tracks #{tracks.each.map { |t| t.name }.join ', '}"
+        response.reply "Added tracks #{tracks.collect { |t| t.name }.join ', '}"
       end
 
       def search_albums(term)
