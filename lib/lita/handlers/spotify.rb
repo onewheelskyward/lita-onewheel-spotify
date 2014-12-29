@@ -44,7 +44,7 @@ module Lita
         #   Lita.logger.debug "response: #{response.headers}"
         #   Lita.logger.debug "response body: #{response.to_str}"
         # }
-        response.reply uri
+        response.reply_privately uri
       end
 
       def authorize(request, response)
