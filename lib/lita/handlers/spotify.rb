@@ -11,7 +11,14 @@ module Lita
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
       route(/^!spotify search album (.*)/, :handle_album_search)
-      route(/^!spotify playlist add track (.*)/, :handle_playlist_add)
+      route(/^!spotify playlist add (track) (.*)/, :handle_playlist_add)
+
+      http.get '/spotify/authorize', :authorize
+
+      def authorize(request, response)
+        Lita.logger.debug "Reached authorize.  request: #{request.inspect}, response: #{response.inspect}"
+        # response.body << "Hello, #{request.user_agent}!"
+      end
 
       # def initialize(x)
       #   if config.client_id.nil? or config.client_secret.nil?
@@ -29,7 +36,7 @@ module Lita
 
       def handle_track_search(response)
         search_term = response.matches[0][0]
-        if track = search_tracks(search_term)
+        if track = search_tracks(search_term).first
           artist_name = (track.artists.count > 0) ? track.artists.first.name : ''
           response.reply "#{artist_name} - #{track.name}.  #{track.external_urls['spotify']}"
         end
@@ -58,15 +65,11 @@ module Lita
             tracks = search_tracks search_term
         end
 
-        playlist.add_tracks!(tracks)
+        # begin
+          playlist.add_tracks!(tracks)
+        # end
 
-        # playlist.name               #=> "Movie Soundtrack Masterpieces"
-        # playlist.description        #=> "Iconic soundtracks featured..."
-        # playlist.followers['total'] #=> 13
-        # playlist.tracks             #=> (Track array)
-
-        # my_playlists = user.playlists #=> (Playlist array)
-        response.reply "Added tracks #{tracks.map { |t| t.name }.join ', '}"
+        response.reply "Added tracks #{tracks.each.map { |t| t.name }.join ', '}"
       end
 
       def search_albums(term)
@@ -77,10 +80,7 @@ module Lita
       end
 
       def search_tracks(term)
-        tracks = RSpotify::Track.search(term)
-        if tracks.count > 0
-          tracks.first
-        end
+        RSpotify::Track.search(term)
       end
 
       def search_artists(term)
