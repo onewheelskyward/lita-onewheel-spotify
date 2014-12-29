@@ -54,11 +54,12 @@ module Lita
       def authorize(request, response)
         Lita.logger.debug "Reached authorize.  request: #{request.inspect}, response: #{response.inspect}"
         query = Rack::Utils.parse_nested_query request.query_string
+        Lita.logger.debug "query: #{query.inspect}"
         if query['code'].nil? and query['state'].nil?
           response.body << 'Parameter error!'
         else
-          redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
           Lita.logger.debug "Setting redis key: #{REDIS_KEY}, #{query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX}, #{query['code']}"
+          redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
           response.body << 'Code received.  You may return to the safety of IRC.'
         end
       end
