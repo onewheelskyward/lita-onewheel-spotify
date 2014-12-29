@@ -19,21 +19,25 @@ module Lita
       def handle_auth(response)
         uri = 'https://accounts.spotify.com/authorize/'
         # + '&state='
+        uri += "client_id=#{config.client_id}"\
+              'response_type=code'\
+              "redirect_uri=#{URI.encode 'http://54.69.102.36:8182/spotify/authorize'}"\
+              "scope=#{%w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')}"
 
         Lita.logger.debug "Sending request to #{uri}"
-        response = RestClient.get(uri, { :params => {
-                                         :client_id => config.client_id,
-                                         :response_type => 'code',
-                                         :redirect_uri => 'http://54.69.102.36:8182/spotify/authorize',
-                                         :scope => %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')
-                                         }
-                                       }
-        ) { |response, request, result|
-          Lita.logger.debug "HTTP request: #{request.url}"
-          Lita.logger.debug "HTTP response code: #{response.code}"
-          Lita.logger.debug "response: #{response.headers}"
-          Lita.logger.debug "response body: #{response.to_str}"
-        }
+        # response = RestClient.get(uri, { :params => {
+        #                                  :client_id => config.client_id,
+        #                                  :response_type => 'code',
+        #                                  :redirect_uri => 'http://54.69.102.36:8182/spotify/authorize',
+        #                                  :scope => %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')
+        #                                  }
+        #                                }
+        # ) { |response, request, result|
+        #   Lita.logger.debug "HTTP request: #{request.url}"
+        #   Lita.logger.debug "HTTP response code: #{response.code}"
+        #   Lita.logger.debug "response: #{response.headers}"
+        #   Lita.logger.debug "response body: #{response.to_str}"
+        # }
 
       end
 
