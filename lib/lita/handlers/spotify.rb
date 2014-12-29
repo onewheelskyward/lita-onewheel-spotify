@@ -51,8 +51,10 @@ module Lita
 
       def handle_playlist_add(response)
         search_term = response.matches[0][0]
+        Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
         # user = RSpotify::User.find(config.user)
+        Lita.logger.debug "Finding playlist with #{config.user} and #{config.playlist}"
         playlist = RSpotify::Playlist.find(config.user, config.playlist)
 
         # playlist.name               #=> "Movie Soundtrack Masterpieces"
