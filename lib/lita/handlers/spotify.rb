@@ -22,7 +22,7 @@ module Lita
         # + '&state='
         uri += "client_id=#{config.client_id}"\
               'response_type=code'\
-              "redirect_uri=#{URI.escape 'http://54.69.102.36:8182/spotify/authorize'}"\
+              "redirect_uri=#{URI.escape 'http://54.69.102.36:8182/spotify/authorize', /\/:/}"\
               "scope=#{URI.escape %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')}"
 
         Lita.logger.debug "Sending request to #{uri}"
