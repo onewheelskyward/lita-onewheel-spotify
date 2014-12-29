@@ -11,7 +11,7 @@ module Lita
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
       route(/^!spotify search album (.*)/, :handle_album_search)
-      route(/^!spotify playlist/, :handle_playlist_add)
+      route(/^!spotify playlist add track (.*)/, :handle_playlist_add)
 
       # def initialize(x)
       #   if config.client_id.nil? or config.client_secret.nil?
