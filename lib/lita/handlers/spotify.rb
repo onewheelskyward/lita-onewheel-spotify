@@ -5,6 +5,8 @@ require 'uri'
 module Lita
   module Handlers
     class Spotify < Handler
+      REDIS_KEY = 'spotify'
+      REDIS_AUTH_CODE_KEY_SUFFIX = '-auth-code'
       config :client_id
       config :client_secret
       config :user
@@ -26,6 +28,7 @@ module Lita
               "&redirect_uri=#{CGI.escape 'http://ec2-54-69-102-36.us-west-2.compute.amazonaws.com:8182/spotify/authorize'}"\
               "&scope=#{CGI.escape %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')}"\
               '&show_dialog=true'
+              "&state=#{response.user.name}"
         uri
       end
 
@@ -50,7 +53,14 @@ module Lita
 
       def authorize(request, response)
         Lita.logger.debug "Reached authorize.  request: #{request.inspect}, response: #{response.inspect}"
-        # response.body << "Hello, #{request.user_agent}!"
+        query = Rack::Utils.parse_nested_query request.query_string
+        if query['code'].nil? and query['state'].nil?
+          response.body << 'Parameter error!'
+        else
+          redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
+          Lita.logger.debug "Setting redis key: #{REDIS_KEY}, #{query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX}, #{query['code']}"
+          response.body << 'Code received.  You may return to the safety of IRC.'
+        end
       end
 
       # def initialize(x)
