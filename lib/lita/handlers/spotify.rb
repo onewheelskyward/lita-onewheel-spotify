@@ -17,7 +17,7 @@ module Lita
       http.get '/spotify/authorize', :authorize
 
       def handle_auth(response)
-        uri = 'https://accounts.spotify.com/authorize/?'
+        uri = 'https://accounts.spotify.com/authorize/'
         # + '&state='
 
         Lita.logger.debug "Sending request to #{uri}"
