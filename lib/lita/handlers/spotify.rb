@@ -6,6 +6,7 @@ module Lita
       config :client_id
       config :client_secret
       config :user
+      config :playlist
 
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
@@ -51,8 +52,16 @@ module Lita
       def handle_playlist_add(response)
         search_term = response.matches[0][0]
         RSpotify.authenticate(config.client_id, config.client_secret)
-        user = RSpotify::User.find(config.user)
-        my_playlists = user.playlists #=> (Playlist array)
+        # user = RSpotify::User.find(config.user)
+        playlist = RSpotify::Playlist.find(config.user, config.playlist)
+
+        # playlist.name               #=> "Movie Soundtrack Masterpieces"
+        # playlist.description        #=> "Iconic soundtracks featured..."
+        # playlist.followers['total'] #=> 13
+        # playlist.tracks             #=> (Track array)
+
+        # my_playlists = user.playlists #=> (Playlist array)
+        response.reply playlist.name
       end
 
     end
