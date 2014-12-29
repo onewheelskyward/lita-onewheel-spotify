@@ -23,7 +23,7 @@ module Lita
         # + '&state='
         uri += "?client_id=#{config.client_id}"\
               '&response_type=code'\
-              "&redirect_uri=#{CGI.escape 'http://54.69.102.36:8182/spotify/authorize'}"\
+              "&redirect_uri=#{CGI.escape 'http://ec2-54-69-102-36.us-west-2.compute.amazonaws.com:8182/spotify/authorize'}"\
               "&scope=#{CGI.escape %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')}"
         uri
       end
