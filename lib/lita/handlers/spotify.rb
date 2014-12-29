@@ -28,11 +28,13 @@ module Lita
                                          :scope => %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join('%20')
                                          }
                                        }
-        )
+        ) { |response, request, result|
+          Lita.logger.debug "HTTP response code: #{request.url}"
+          Lita.logger.debug "HTTP response code: #{response.code}"
+          Lita.logger.debug "response: #{response.headers}"
+          Lita.logger.debug "response body: #{response.to_str}"
+        }
 
-        Lita.logger.debug "HTTP response code: #{response.code}"
-        Lita.logger.debug "response: #{response.headers}"
-        Lita.logger.debug "response body: #{response.to_str}"
       end
 
       def authorize(request, response)
