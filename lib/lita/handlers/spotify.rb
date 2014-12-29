@@ -3,6 +3,10 @@ require 'rspotify'
 module Lita
   module Handlers
     class Spotify < Handler
+      config :client_id
+      config :client_secret
+      config :user
+
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
       route(/^!spotify search album (.*)/, :handle_album_search)
