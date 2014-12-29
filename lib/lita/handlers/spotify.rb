@@ -6,6 +6,14 @@ module Lita
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
       route(/^!spotify search album (.*)/, :handle_album_search)
+      route(/^!spotify playlist/, :handle_playlist_add)
+
+      # def initialize(x)
+      #   if config.client_id.nil? or config.client_secret.nil?
+      #     raise 'config.handlers.spotify.client_id and config.handlers.spotify.client_secret must be specified.'
+      #   end
+      #   super(x)
+      # end
 
       def handle_artist_search(response)
         search_term = response.matches[0][0]
@@ -36,8 +44,14 @@ module Lita
         end
       end
 
-    end
+      def handle_playlist_add(response)
+        search_term = response.matches[0][0]
+        RSpotify.authenticate(config.client_id, config.client_secret)
+        user = RSpotify::User.find(config.user)
+        my_playlists = user.playlists #=> (Playlist array)
+      end
 
+    end
     Lita.register_handler(Spotify)
   end
 end
