@@ -77,7 +77,7 @@ module Lita
 
           token_response = RestClient::Request.execute(:method => :post,
                                                        :url => 'https://accounts.spotify.com/api/token',
-                                                       :params => params,
+                                                       :payload => params,
                                                        :headers => headers
           )
 
