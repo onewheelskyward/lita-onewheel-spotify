@@ -125,14 +125,13 @@ module Lita
         Lita.logger.debug "Using the search type and term #{search_type} and #{search_term}"
         Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
-        auth_code = redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)
         spotify_user = RSpotify::User.find(config.user)
         suh = spotify_user.to_hash
         # suh['credentials'] = {'token' => config.auth_code}
-        suh['credentials'] = {'token' => auth_code}
+        suh['credentials'] = redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)
         actual_spotify_user = RSpotify::User.new(suh)
         # user = RSpotify::User.find(config.user)
-        Lita.logger.debug "Finding playlist with spotify user #{spotify_user.id} #{config.user} and #{config.playlist}"
+        Lita.logger.debug "Finding playlist with spotify user #{actual_spotify_user.id} #{config.user} and #{config.playlist}"
         # playlist = RSpotify::Playlist.find(spotify_user, config.playlist)
         spotify_playlist = nil
         actual_spotify_user.playlists.each do |playlist|
