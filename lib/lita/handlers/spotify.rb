@@ -68,7 +68,9 @@ module Lita
           response.body << 'Code received.  You may return to the safety of IRC.'
           params = {:grant_type => 'authorization_code',
                   :code => query['code'],
-                  :redirect_uri => config.redirect_uri
+                  :redirect_uri => config.redirect_uri,
+                  :client_id => config.client_id,
+                  :client_secret => config.client_secret
                   }
           headers = {'Authorization' => "Basic #{Base64.encode64(config.client_id + ':' + config.client_secret)}"}
 
