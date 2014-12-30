@@ -65,7 +65,7 @@ module Lita
           Lita.logger.debug "Setting redis key: #{REDIS_KEY}, #{query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX}, #{query['code']}"
           redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
           response.body << 'Code received.  You may return to the safety of IRC.'
-          token_response = RestClient.post 'https://accounts.spotify.com/api/token', {grant_type: 'authorization_code', code: query['code'], redirect_uri: config.redirect_uri}
+          token_response = RestClient.post 'https://accounts.spotify.com/api/token', :grant_type => 'authorization_code', :code => query['code'], :redirect_uri => config.redirect_uri
           Lita.logger.debug "Token response: #{token_response.inspect}"
         end
       end
