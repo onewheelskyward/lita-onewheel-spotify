@@ -128,7 +128,7 @@ module Lita
         Lita.logger.debug "Using the search type and term #{search_type} and #{search_term}"
         Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
-        actual_spotify_user = big_old_rspotify_hack_to_get_credentials_added
+        actual_spotify_user = big_old_rspotify_hack_to_get_credentials_added(response.user.name)
         # user = RSpotify::User.find(config.user)
         Lita.logger.debug "Finding playlist with spotify user #{actual_spotify_user.id} #{config.user} and #{config.playlist}"
         # playlist = RSpotify::Playlist.find(spotify_user, config.playlist)
@@ -151,10 +151,10 @@ module Lita
         response.reply "Added track #{track.name}"
       end
 
-      def big_old_rspotify_hack_to_get_credentials_added
+      def big_old_rspotify_hack_to_get_credentials_added(username)
         spotify_user = RSpotify::User.find(config.user)
         suh = spotify_user.to_hash
-        suh['credentials'] = redis.hget(REDIS_KEY, response.user.name + REDIS_ACCESS_TOKEN_KEY_SUFFIX)
+        suh['credentials'] = redis.hget(REDIS_KEY, username + REDIS_ACCESS_TOKEN_KEY_SUFFIX)
         Lita.logger.debug "Added credentials: #{suh['credentials']}"
         actual_spotify_user = RSpotify::User.new(suh)
       end
