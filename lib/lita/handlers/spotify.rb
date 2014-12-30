@@ -84,7 +84,8 @@ module Lita
                                                        :headers => headers
           )
 
-          Lita.logger.debug "Token response: #{token_response.inspect}"
+          Lita.logger.debug "Token response: #{token_response.inspect}, saving to redis"
+          redis.hset(REDIS_KEY, query['state'] + REDIS_ACCESS_TOKEN_KEY_SUFFIX, token_response.body)
         end
       end
 
