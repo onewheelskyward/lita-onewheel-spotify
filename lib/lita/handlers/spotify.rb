@@ -15,6 +15,7 @@ module Lita
       config :playlist
       config :auth_code
       config :redirect_uri
+      config :auth_basic
 
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
@@ -69,10 +70,10 @@ module Lita
           params = {:grant_type => 'authorization_code',
                   :code => query['code'],
                   :redirect_uri => config.redirect_uri,
-                  :client_id => config.client_id,
-                  :client_secret => config.client_secret
+                  # :client_id => config.client_id,
+                  # :client_secret => config.client_secret
                   }
-          headers = {'Authorization' => "Basic #{Base64.encode64(config.client_id + ':' + config.client_secret)}"}
+          headers = {'Authorization' => "Basic #{config.auth_basic}"}
 
           Lita.logger.debug("Params: #{params.inspect}")
           Lita.logger.debug("Headers: #{headers.inspect}")
