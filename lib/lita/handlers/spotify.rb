@@ -129,6 +129,7 @@ module Lita
         suh = spotify_user.to_hash
         # suh['credentials'] = {'token' => config.auth_code}
         suh['credentials'] = redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)
+        Lita.logger.debug "Added credentials: #{suh['credentials']}"
         actual_spotify_user = RSpotify::User.new(suh)
         # user = RSpotify::User.find(config.user)
         Lita.logger.debug "Finding playlist with spotify user #{actual_spotify_user.id} #{config.user} and #{config.playlist}"
