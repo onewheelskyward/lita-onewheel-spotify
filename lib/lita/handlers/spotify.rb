@@ -7,10 +7,13 @@ module Lita
     class Spotify < Handler
       REDIS_KEY = 'spotify'
       REDIS_AUTH_CODE_KEY_SUFFIX = '-auth-code'
+      REDIS_ACCESS_TOKEN_KEY_SUFFIX = '-access-token'
       config :client_id
       config :client_secret
       config :user
       config :playlist
+      config :auth_code
+      config :redirect_uri
 
       route(/^!spotify search artist (.*)/, :handle_artist_search)
       route(/^!spotify search track (.*)/, :handle_track_search)
@@ -25,7 +28,7 @@ module Lita
         # + '&state='
         uri += "?client_id=#{config.client_id}"\
               '&response_type=code'\
-              "&redirect_uri=#{CGI.escape 'http://ec2-54-69-102-36.us-west-2.compute.amazonaws.com:8182/spotify/authorize'}"\
+              "&redirect_uri=#{CGI.escape config.redirect_uri}"\
               "&scope=#{CGI.escape %w(playlist-read-private playlist-modify-public playlist-modify-private user-follow-modify user-follow-read user-library-read user-library-modify user-read-private user-read-email).join(' ')}"\
               '&show_dialog=true'\
               "&state=#{username}"
@@ -57,10 +60,13 @@ module Lita
         Lita.logger.debug "query: #{query.inspect}"
         if query['code'].nil? and query['state'].nil?
           response.body << 'Parameter error!'
+          response.body << query['error']
         else
           Lita.logger.debug "Setting redis key: #{REDIS_KEY}, #{query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX}, #{query['code']}"
           redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
           response.body << 'Code received.  You may return to the safety of IRC.'
+          token_response = RestClient.post 'https://accounts.spotify.com/api/token', {grant_type: 'authorization_code', code: query['code'], redirect_uri: config.redirect_uri}
+          Lita.logger.debug "Token response: #{token_response.inspect}"
         end
       end
 
@@ -100,10 +106,21 @@ module Lita
         Lita.logger.debug "Using the search type and term #{search_type} and #{search_term}"
         Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
-        spotify_user = RSpotify::User.new({'credentials' => redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)})
+        auth_code = redis.hget(REDIS_KEY, response.user.name + REDIS_AUTH_CODE_KEY_SUFFIX)
+        spotify_user = RSpotify::User.find(config.user)
+        suh = spotify_user.to_hash
+        # suh['credentials'] = {'token' => config.auth_code}
+        suh['credentials'] = {'token' => auth_code}
+        actual_spotify_user = RSpotify::User.new(suh)
         # user = RSpotify::User.find(config.user)
-        Lita.logger.debug "Finding playlist with spotify user #{spotify_user.display_name} #{config.user} and #{config.playlist}"
-        playlist = RSpotify::Playlist.find(config.user, config.playlist)
+        Lita.logger.debug "Finding playlist with spotify user #{spotify_user.id} #{config.user} and #{config.playlist}"
+        # playlist = RSpotify::Playlist.find(spotify_user, config.playlist)
+        spotify_playlist = nil
+        actual_spotify_user.playlists.each do |playlist|
+          if playlist.name == config.playlist
+            spotify_playlist = playlist
+          end
+        end
 
         case search_type
           when 'track'
@@ -111,7 +128,7 @@ module Lita
         end
 
         # begin
-          playlist.add_tracks!(tracks)
+          spotify_playlist.add_tracks!(tracks)
         # end
 
         response.reply "Added tracks #{tracks.collect { |t| t.name }.join ', '}"
