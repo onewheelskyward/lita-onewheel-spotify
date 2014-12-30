@@ -1,6 +1,7 @@
 require 'rspotify'
 require 'rest_client'
 require 'uri'
+require 'base64'
 
 module Lita
   module Handlers
@@ -67,15 +68,17 @@ module Lita
           response.body << 'Code received.  You may return to the safety of IRC.'
           params = {:grant_type => 'authorization_code',
                   :code => query['code'],
-                  :redirect_uri => config.redirect_uri,
-                  :client_id => config.client_id,
-                  :client_secret => config.client_secret}
+                  :redirect_uri => config.redirect_uri
+                  }
+          headers = {'Authorization' => "Basic #{Base64.encode64(config.client_id + ':' + config.client_secret)}"}
+
           Lita.logger.debug("Params: #{params.inspect}")
+          Lita.logger.debug("Headers: #{headers.inspect}")
 
           token_response = RestClient::Request.execute(:method => :post,
                                                        :url => 'https://accounts.spotify.com/api/token',
-                                                       :params => params
-
+                                                       :params => params,
+                                                       :headers => headers
           )
 
           Lita.logger.debug "Token response: #{token_response.inspect}"
