@@ -85,6 +85,9 @@ module Lita
           )
 
           Lita.logger.debug "Token response: #{token_response.inspect}, saving to redis"
+
+          # Inexplicably, rspotify requires token while spotify returns access token.  HACK HACK HACK
+          token_response['token'] = token_response['access_token']
           redis.hset(REDIS_KEY, query['state'] + REDIS_ACCESS_TOKEN_KEY_SUFFIX, token_response.body)
         end
       end
@@ -125,12 +128,7 @@ module Lita
         Lita.logger.debug "Using the search type and term #{search_type} and #{search_term}"
         Lita.logger.debug "Authenticating to Spotify with #{config.client_id} and #{config.client_secret}"
         RSpotify.authenticate(config.client_id, config.client_secret)
-        spotify_user = RSpotify::User.find(config.user)
-        suh = spotify_user.to_hash
-        # suh['credentials'] = {'token' => config.auth_code}
-        suh['credentials'] = redis.hget(REDIS_KEY, response.user.name + REDIS_ACCESS_TOKEN_KEY_SUFFIX)
-        Lita.logger.debug "Added credentials: #{suh['credentials']}"
-        actual_spotify_user = RSpotify::User.new(suh)
+        actual_spotify_user = big_old_rspotify_hack_to_get_credentials_added
         # user = RSpotify::User.find(config.user)
         Lita.logger.debug "Finding playlist with spotify user #{actual_spotify_user.id} #{config.user} and #{config.playlist}"
         # playlist = RSpotify::Playlist.find(spotify_user, config.playlist)
@@ -143,14 +141,22 @@ module Lita
 
         case search_type
           when 'track'
-            tracks = search_tracks search_term
+            track = search_track search_term
         end
 
         # begin
-          spotify_playlist.add_tracks!(tracks)
+          spotify_playlist.add_tracks!(track)
         # end
 
-        response.reply "Added tracks #{tracks.collect { |t| t.name }.join ', '}"
+        response.reply "Added track #{track.name}"
+      end
+
+      def big_old_rspotify_hack_to_get_credentials_added
+        spotify_user = RSpotify::User.find(config.user)
+        suh = spotify_user.to_hash
+        suh['credentials'] = redis.hget(REDIS_KEY, response.user.name + REDIS_ACCESS_TOKEN_KEY_SUFFIX)
+        Lita.logger.debug "Added credentials: #{suh['credentials']}"
+        actual_spotify_user = RSpotify::User.new(suh)
       end
 
       def search_albums(term)
@@ -162,6 +168,10 @@ module Lita
 
       def search_tracks(term)
         RSpotify::Track.search(term)
+      end
+
+      def search_track(term)
+        RSpotify::Track.search(term).first
       end
 
       def search_artists(term)
