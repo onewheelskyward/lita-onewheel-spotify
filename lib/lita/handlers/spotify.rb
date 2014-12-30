@@ -65,13 +65,16 @@ module Lita
           Lita.logger.debug "Setting redis key: #{REDIS_KEY}, #{query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX}, #{query['code']}"
           redis.hset(REDIS_KEY, query['state'] + REDIS_AUTH_CODE_KEY_SUFFIX, query['code'])
           response.body << 'Code received.  You may return to the safety of IRC.'
+          params = {:grant_type => 'authorization_code',
+                  :code => query['code'],
+                  :redirect_uri => config.redirect_uri,
+                  :client_id => config.client_id,
+                  :client_secret => config.client_secret}
+          Lita.logger.debug("Params: #{params.inspect}")
+
           token_response = RestClient::Request.execute(:method => :post,
                                                        :url => 'https://accounts.spotify.com/api/token',
-                                                       :params => {:grant_type => 'authorization_code',
-                                                       :code => query['code'],
-                                                       :redirect_uri => config.redirect_uri,
-                                                       :client_id => config.client_id,
-                                                       :client_secret => config.client_secret},
+                                                       :params => params
 
           )
 
