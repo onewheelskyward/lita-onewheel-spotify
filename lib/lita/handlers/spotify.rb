@@ -87,7 +87,7 @@ module Lita
           Lita.logger.debug "Token response: #{token_response.inspect}, saving to redis"
 
           # Inexplicably, rspotify requires token while spotify returns access token.  HACK HACK HACK
-          token_response['token'] = token_response['access_token']
+          # token_response['token'] = token_response['access_token']
           redis.hset(REDIS_KEY, query['state'] + REDIS_ACCESS_TOKEN_KEY_SUFFIX, token_response.body)
         end
       end
