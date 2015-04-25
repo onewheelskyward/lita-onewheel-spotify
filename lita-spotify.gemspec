@@ -25,5 +25,5 @@ Gem::Specification.new do |spec|
 
   # spec.add_runtime_dependency 'spotify'
   spec.add_runtime_dependency 'rspotify'
-  spec.add_runtime_dependency 'rest_client'
+  spec.add_runtime_dependency 'rest-client'
 end
